@@ -2,87 +2,144 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 220 20% 97%;
+    --foreground: 220 20% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 20% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 220 20% 10%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 220 70% 50%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 220 15% 92%;
+    --secondary-foreground: 220 20% 20%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 15% 95%;
+    --muted-foreground: 220 10% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 220 15% 90%;
+    --accent-foreground: 220 20% 15%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 15% 90%;
+    --input: 220 15% 90%;
+    --ring: 220 70% 50%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* Sentiment colors */
+    --positive: 152 70% 42%;
+    --positive-light: 152 70% 95%;
+    --positive-foreground: 0 0% 100%;
+    
+    --negative: 0 72% 55%;
+    --negative-light: 0 72% 95%;
+    --negative-foreground: 0 0% 100%;
+    
+    --neutral: 215 20% 55%;
+    --neutral-light: 215 20% 95%;
+    --neutral-foreground: 0 0% 100%;
+
+    /* Chart colors */
+    --chart-positive: 152 70% 42%;
+    --chart-negative: 0 72% 55%;
+    --chart-neutral: 215 20% 55%;
+    --chart-grid: 220 15% 90%;
+
+    /* Gradient definitions */
+    --gradient-hero: linear-gradient(135deg, hsl(220, 70%, 50%) 0%, hsl(260, 70%, 55%) 100%);
+    --gradient-positive: linear-gradient(135deg, hsl(152, 70%, 42%) 0%, hsl(170, 70%, 45%) 100%);
+    --gradient-negative: linear-gradient(135deg, hsl(0, 72%, 55%) 0%, hsl(20, 72%, 50%) 100%);
+    --gradient-neutral: linear-gradient(135deg, hsl(215, 20%, 55%) 0%, hsl(230, 25%, 60%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(220, 20%, 98%) 100%);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(220 20% 10% / 0.03);
+    --shadow-md: 0 4px 6px -1px hsl(220 20% 10% / 0.05), 0 2px 4px -2px hsl(220 20% 10% / 0.03);
+    --shadow-lg: 0 10px 15px -3px hsl(220 20% 10% / 0.08), 0 4px 6px -4px hsl(220 20% 10% / 0.03);
+    --shadow-glow-positive: 0 0 20px hsl(152 70% 42% / 0.3);
+    --shadow-glow-negative: 0 0 20px hsl(0 72% 55% / 0.3);
+    --shadow-glow-neutral: 0 0 20px hsl(215 20% 55% / 0.3);
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 224 25% 8%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    --card: 224 25% 11%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 224 25% 11%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 220 70% 55%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 224 20% 18%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 224 20% 15%;
+    --muted-foreground: 215 20% 60%;
 
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 224 20% 18%;
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62.8% 55%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 224 20% 18%;
+    --input: 224 20% 18%;
+    --ring: 220 70% 55%;
+
+    /* Dark mode sentiment colors */
+    --positive: 152 65% 48%;
+    --positive-light: 152 30% 18%;
+    --positive-foreground: 0 0% 100%;
+    
+    --negative: 0 65% 58%;
+    --negative-light: 0 30% 18%;
+    --negative-foreground: 0 0% 100%;
+    
+    --neutral: 215 25% 58%;
+    --neutral-light: 215 15% 20%;
+    --neutral-foreground: 0 0% 100%;
+
+    /* Dark chart colors */
+    --chart-positive: 152 65% 48%;
+    --chart-negative: 0 65% 58%;
+    --chart-neutral: 215 25% 58%;
+    --chart-grid: 224 20% 20%;
+
+    /* Dark gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(220, 70%, 55%) 0%, hsl(260, 70%, 60%) 100%);
+    --gradient-positive: linear-gradient(135deg, hsl(152, 65%, 48%) 0%, hsl(170, 65%, 50%) 100%);
+    --gradient-negative: linear-gradient(135deg, hsl(0, 65%, 58%) 0%, hsl(20, 65%, 55%) 100%);
+    --gradient-neutral: linear-gradient(135deg, hsl(215, 25%, 58%) 0%, hsl(230, 30%, 62%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(224, 25%, 11%) 0%, hsl(224, 25%, 9%) 100%);
+
+    /* Dark shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.2);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.3), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.4), 0 4px 6px -4px hsl(0 0% 0% / 0.2);
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -100,6 +157,114 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer components {
+  .sentiment-card {
+    @apply rounded-xl border bg-card p-6 transition-all duration-300;
+    background: var(--gradient-card);
+    box-shadow: var(--shadow-md);
+  }
+
+  .sentiment-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+  }
+
+  .sentiment-badge-positive {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium;
+    background: hsl(var(--positive-light));
+    color: hsl(var(--positive));
+  }
+
+  .sentiment-badge-negative {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium;
+    background: hsl(var(--negative-light));
+    color: hsl(var(--negative));
+  }
+
+  .sentiment-badge-neutral {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium;
+    background: hsl(var(--neutral-light));
+    color: hsl(var(--neutral));
+  }
+
+  .glow-positive {
+    box-shadow: var(--shadow-glow-positive);
+  }
+
+  .glow-negative {
+    box-shadow: var(--shadow-glow-negative);
+  }
+
+  .glow-neutral {
+    box-shadow: var(--shadow-glow-neutral);
+  }
+
+  .progress-bar {
+    @apply h-2 rounded-full overflow-hidden;
+    background: hsl(var(--muted));
+  }
+
+  .progress-bar-fill {
+    @apply h-full rounded-full transition-all duration-500 ease-out;
+  }
+
+  .keyword-chip {
+    @apply inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-all;
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+
+  .keyword-chip:hover {
+    background: hsl(var(--accent));
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out;
+  }
+
+  .animate-pulse-subtle {
+    animation: pulseSlight 2s ease-in-out infinite;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseSlight {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.85;
   }
 }
