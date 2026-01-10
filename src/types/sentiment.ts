@@ -10,6 +10,7 @@ export interface Keyword {
   word: string;
   influence: SentimentType;
   weight: number;
+  percentageContribution?: number;
 }
 
 export interface SentimentResult {
