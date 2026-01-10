@@ -87,9 +87,9 @@ export function FileUploadButton({ onTextsLoaded }: FileUploadButtonProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2">
+        <Button variant="outline" className="gap-2 h-full">
           <Upload className="w-4 h-4" />
-          Import File
+          Upload File
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
