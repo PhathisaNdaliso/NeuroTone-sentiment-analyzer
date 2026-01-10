@@ -17,6 +17,7 @@ interface DashboardProps {
   batchProgress: { current: number; total: number };
   onSingleAnalysis: (text: string) => void;
   onBatchAnalysis: (texts: string[]) => void;
+  onDeleteResult: (id: string) => void;
   onClearResults: () => void;
 }
 
@@ -27,6 +28,7 @@ export function Dashboard({
   batchProgress,
   onSingleAnalysis,
   onBatchAnalysis,
+  onDeleteResult,
   onClearResults,
 }: DashboardProps) {
   return (
@@ -100,7 +102,7 @@ export function Dashboard({
           </div>
 
           {/* Results List */}
-          <ResultsList results={results} />
+          <ResultsList results={results} onDeleteResult={onDeleteResult} />
         </div>
       )}
 

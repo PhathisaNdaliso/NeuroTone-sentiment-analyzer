@@ -71,6 +71,17 @@ export default function Index() {
     setLatestResult(null);
   };
 
+  const deleteResult = useCallback((id: string) => {
+    setResults(prev => prev.filter(r => r.id !== id));
+    if (latestResult?.id === id) {
+      setLatestResult(null);
+    }
+    toast({
+      title: 'Result Deleted',
+      description: 'The analysis result has been removed',
+    });
+  }, [latestResult, toast]);
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -95,6 +106,7 @@ export default function Index() {
                     batchProgress={batchProgress}
                     onSingleAnalysis={handleSingleAnalysis}
                     onBatchAnalysis={handleBatchAnalysis}
+                    onDeleteResult={deleteResult}
                     onClearResults={clearResults}
                   />
                 } 
