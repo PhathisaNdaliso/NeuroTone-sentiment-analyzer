@@ -6,6 +6,7 @@ import { KeywordBreakdown } from '@/components/sentiment/KeywordBreakdown';
 import { ExportButtons } from '@/components/sentiment/ExportButtons';
 import { BatchProgress } from '@/components/sentiment/BatchProgress';
 import { ResultsList } from '@/components/sentiment/ResultsList';
+import { FileUploadButton } from '@/components/FileUploadButton';
 import { Trash2, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -15,6 +16,7 @@ interface DashboardProps {
   isAnalyzing: boolean;
   batchProgress: { current: number; total: number };
   onSingleAnalysis: (text: string) => void;
+  onBatchAnalysis: (texts: string[]) => void;
   onClearResults: () => void;
 }
 
@@ -24,6 +26,7 @@ export function Dashboard({
   isAnalyzing,
   batchProgress,
   onSingleAnalysis,
+  onBatchAnalysis,
   onClearResults,
 }: DashboardProps) {
   return (
@@ -38,9 +41,16 @@ export function Dashboard({
         </p>
       </div>
 
-      {/* Text Input */}
+      {/* Text Input with Upload Button */}
       <div className="sentiment-card">
-        <TextInputArea onAnalyze={onSingleAnalysis} isAnalyzing={isAnalyzing} />
+        <div className="flex gap-4">
+          <div className="flex-1">
+            <TextInputArea onAnalyze={onSingleAnalysis} isAnalyzing={isAnalyzing} />
+          </div>
+          <div className="flex-shrink-0">
+            <FileUploadButton onTextsLoaded={onBatchAnalysis} />
+          </div>
+        </div>
       </div>
 
       {/* Batch Progress */}
