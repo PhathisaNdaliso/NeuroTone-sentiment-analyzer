@@ -45,35 +45,7 @@ serve(async (req) => {
 
     console.log("Analyzing sentiment for text:", text.substring(0, 100) + "...");
 
-    const systemPrompt = `You are an expert sentiment analysis system. Analyze the given text and provide a detailed sentiment analysis.
-
-Your response MUST be a valid JSON object with this exact structure:
-{
-  "sentiment": "positive" | "negative" | "neutral",
-  "confidence": number between 0 and 1,
-  "scores": {
-    "positive": number between 0 and 1,
-    "negative": number between 0 and 1,
-    "neutral": number between 0 and 1
-  },
-  "keywords": [
-    {
-      "word": "keyword",
-      "influence": "positive" | "negative" | "neutral",
-      "weight": number between 0 and 1,
-      "percentageContribution": number between 0 and 100
-    }
-  ],
-  "explanation": "A 2-3 sentence explanation of why this sentiment was detected"
-}
-
-Rules:
-1. The scores must sum to approximately 1.0
-2. Extract 3-8 keywords that most influence the sentiment
-3. Each keyword's percentageContribution should reflect how much it contributes to the overall sentiment (all contributions should sum to approximately 100)
-4. Be accurate and nuanced in your analysis
-5. Consider context, sarcasm, and implicit meanings
-6. ONLY respond with the JSON object, no additional text`;
+    const systemPrompt = `You are an expert sentiment analysis system. Analyze the given text accurately, considering context, sarcasm, and implicit meanings.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -85,9 +57,61 @@ Rules:
         model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Analyze the sentiment of this text:\n\n"${text}"` }
+          { role: "user", content: `Analyze the sentiment of this text: "${text}"` }
         ],
-        temperature: 0.3,
+        temperature: 0.2,
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "analyze_sentiment",
+              description: "Return the sentiment analysis results for the given text",
+              parameters: {
+                type: "object",
+                properties: {
+                  sentiment: {
+                    type: "string",
+                    enum: ["positive", "negative", "neutral"],
+                    description: "The overall sentiment of the text"
+                  },
+                  confidence: {
+                    type: "number",
+                    description: "Confidence score between 0 and 1"
+                  },
+                  scores: {
+                    type: "object",
+                    properties: {
+                      positive: { type: "number", description: "Positive score 0-1" },
+                      negative: { type: "number", description: "Negative score 0-1" },
+                      neutral: { type: "number", description: "Neutral score 0-1" }
+                    },
+                    required: ["positive", "negative", "neutral"]
+                  },
+                  keywords: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        word: { type: "string", description: "The keyword or phrase" },
+                        influence: { type: "string", enum: ["positive", "negative", "neutral"] },
+                        weight: { type: "number", description: "Weight 0-1" },
+                        percentageContribution: { type: "number", description: "Percentage contribution 0-100" }
+                      },
+                      required: ["word", "influence", "weight", "percentageContribution"]
+                    },
+                    description: "3-8 keywords that influence the sentiment"
+                  },
+                  explanation: {
+                    type: "string",
+                    description: "2-3 sentence explanation of the sentiment"
+                  }
+                },
+                required: ["sentiment", "confidence", "scores", "keywords", "explanation"]
+              }
+            }
+          }
+        ],
+        tool_choice: { type: "function", function: { name: "analyze_sentiment" } }
       }),
     });
 
@@ -112,31 +136,20 @@ Rules:
     }
 
     const aiResponse = await response.json();
-    const content = aiResponse.choices?.[0]?.message?.content;
+    console.log("AI response:", JSON.stringify(aiResponse, null, 2));
 
-    if (!content) {
-      console.error("No content in AI response");
-      throw new Error("Invalid AI response");
+    // Extract tool call arguments
+    const toolCall = aiResponse.choices?.[0]?.message?.tool_calls?.[0];
+    if (!toolCall || toolCall.function?.name !== 'analyze_sentiment') {
+      console.error("No tool call in AI response:", aiResponse);
+      throw new Error("Invalid AI response format");
     }
 
-    console.log("AI response:", content);
-
-    // Parse the JSON response, handling potential markdown code blocks
     let parsedContent: SentimentResponse;
     try {
-      let jsonString = content.trim();
-      // Remove markdown code blocks if present
-      if (jsonString.startsWith('```json')) {
-        jsonString = jsonString.slice(7);
-      } else if (jsonString.startsWith('```')) {
-        jsonString = jsonString.slice(3);
-      }
-      if (jsonString.endsWith('```')) {
-        jsonString = jsonString.slice(0, -3);
-      }
-      parsedContent = JSON.parse(jsonString.trim());
+      parsedContent = JSON.parse(toolCall.function.arguments);
     } catch (parseError) {
-      console.error("Failed to parse AI response:", parseError, content);
+      console.error("Failed to parse tool arguments:", parseError, toolCall.function.arguments);
       throw new Error("Failed to parse sentiment analysis");
     }
 
