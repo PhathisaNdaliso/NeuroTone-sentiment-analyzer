@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { X, Trash2, Download, FileJson, FileText, Clock, MessageSquare } from 'lucide-react';
+import { X, Trash2, Download, FileJson, FileText, FileType, Clock, MessageSquare } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,6 +62,94 @@ export function ResultDetailModal({ result, open, onClose, onDelete }: ResultDet
     a.download = `sentiment-${result.id}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const exportAsPDF = () => {
+    const keywords = result.keywords.map(k => `${k.word} (${k.influence})`).join(', ');
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Sentiment Analysis - ${result.id}</title>
+          <style>
+            body { font-family: system-ui, -apple-system, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+            h1 { color: #1a1a2e; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+            .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+            .section { margin-bottom: 24px; }
+            .section-title { font-weight: 600; color: #333; margin-bottom: 8px; }
+            .text-box { background: #f5f5f5; padding: 16px; border-radius: 8px; white-space: pre-wrap; }
+            .sentiment-badge { display: inline-block; padding: 4px 12px; border-radius: 16px; font-weight: 600; }
+            .positive { background: #d4edda; color: #155724; }
+            .negative { background: #f8d7da; color: #721c24; }
+            .neutral { background: #e2e3e5; color: #383d41; }
+            .scores { display: flex; gap: 20px; }
+            .score-item { text-align: center; padding: 12px; background: #f8f9fa; border-radius: 8px; flex: 1; }
+            .score-value { font-size: 24px; font-weight: bold; }
+            .score-label { font-size: 12px; color: #666; text-transform: capitalize; }
+            .keywords { display: flex; flex-wrap: wrap; gap: 8px; }
+            .keyword { background: #e9ecef; padding: 4px 10px; border-radius: 12px; font-size: 13px; }
+          </style>
+        </head>
+        <body>
+          <h1>Sentiment Analysis Report</h1>
+          <div class="meta">Generated: ${new Date().toLocaleString()} | ID: ${result.id}</div>
+          
+          <div class="section">
+            <div class="section-title">Sentiment</div>
+            <span class="sentiment-badge ${result.sentiment}">${result.sentiment.charAt(0).toUpperCase() + result.sentiment.slice(1)}</span>
+            <span style="margin-left: 12px; color: #666;">Confidence: ${Math.round(result.confidence * 100)}%</span>
+          </div>
+          
+          <div class="section">
+            <div class="section-title">Score Breakdown</div>
+            <div class="scores">
+              <div class="score-item">
+                <div class="score-value">${Math.round(result.scores.positive * 100)}%</div>
+                <div class="score-label">Positive</div>
+              </div>
+              <div class="score-item">
+                <div class="score-value">${Math.round(result.scores.negative * 100)}%</div>
+                <div class="score-label">Negative</div>
+              </div>
+              <div class="score-item">
+                <div class="score-value">${Math.round(result.scores.neutral * 100)}%</div>
+                <div class="score-label">Neutral</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="section">
+            <div class="section-title">Input Text</div>
+            <div class="text-box">${result.text}</div>
+          </div>
+          
+          ${result.keywords.length > 0 ? `
+          <div class="section">
+            <div class="section-title">Key Words</div>
+            <div class="keywords">
+              ${result.keywords.map(k => `<span class="keyword">${k.word} (${k.influence})</span>`).join('')}
+            </div>
+          </div>
+          ` : ''}
+          
+          <div class="section">
+            <div class="section-title">Analysis Explanation</div>
+            <p>${result.explanation}</p>
+          </div>
+          
+          <div class="meta" style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
+            Analyzed: ${result.timestamp.toLocaleString()}
+          </div>
+        </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      printWindow.print();
+    }
   };
 
   const handleDelete = () => {
@@ -149,6 +237,10 @@ export function ResultDetailModal({ result, open, onClose, onDelete }: ResultDet
                 <DropdownMenuItem onClick={exportAsCSV} className="gap-2">
                   <FileText className="w-4 h-4" />
                   Export as CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={exportAsPDF} className="gap-2">
+                  <FileType className="w-4 h-4" />
+                  Export as PDF
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
