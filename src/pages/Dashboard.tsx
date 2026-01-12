@@ -7,7 +7,7 @@ import { ExportButtons } from '@/components/sentiment/ExportButtons';
 import { BatchProgress } from '@/components/sentiment/BatchProgress';
 import { ResultsList } from '@/components/sentiment/ResultsList';
 import { FileUploadButton } from '@/components/FileUploadButton';
-import { VoiceUploadButton } from '@/components/VoiceUploadButton';
+import { VoiceAnalysisSection } from '@/components/sentiment/VoiceAnalysisSection';
 import { Trash2, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -54,20 +54,21 @@ export function Dashboard({
         </p>
       </div>
 
-      {/* Text Input with Upload and Voice Buttons */}
-      <div className="sentiment-card">
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <TextInputArea onAnalyze={onSingleAnalysis} isAnalyzing={isAnalyzing} />
-          </div>
-          <div className="flex-shrink-0">
-            <FileUploadButton onTextsLoaded={onBatchAnalysis} />
-          </div>
-          <div className="flex-shrink-0">
-            <VoiceUploadButton onAnalysisComplete={onVoiceAnalysis} />
-          </div>
+      {/* Main Input Grid - Text and File Upload side by side */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Text Input */}
+        <div className="sentiment-card">
+          <TextInputArea onAnalyze={onSingleAnalysis} isAnalyzing={isAnalyzing} />
+        </div>
+
+        {/* File Upload */}
+        <div className="sentiment-card flex flex-col">
+          <FileUploadButton onTextsLoaded={onBatchAnalysis} />
         </div>
       </div>
+
+      {/* Voice Analysis Section - Below text input */}
+      <VoiceAnalysisSection onAnalysisComplete={onVoiceAnalysis} />
 
       {/* Batch Progress */}
       {isAnalyzing && batchProgress.total > 0 && (

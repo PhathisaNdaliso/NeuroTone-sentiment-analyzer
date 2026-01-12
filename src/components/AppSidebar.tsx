@@ -1,4 +1,4 @@
-import { Brain, LayoutDashboard, BarChart3 } from 'lucide-react';
+import { Brain, LayoutDashboard, BarChart3, History } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { ModelCard } from '@/components/sidebar/ModelCard';
 
@@ -18,6 +18,7 @@ import {
 
 const navItems = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard },
+  { title: 'Analysis History', url: '/history', icon: History },
   { title: 'Comparative Analysis', url: '/comparative', icon: BarChart3 },
 ];
 
