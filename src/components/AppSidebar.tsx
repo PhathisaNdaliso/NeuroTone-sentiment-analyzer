@@ -1,5 +1,6 @@
-import { Brain, LayoutDashboard, BarChart3, Upload } from 'lucide-react';
+import { Brain, LayoutDashboard, BarChart3 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
+import { ModelCard } from '@/components/sidebar/ModelCard';
 
 import {
   Sidebar,
@@ -11,6 +12,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
+  SidebarFooter,
+  SidebarSeparator,
 } from '@/components/ui/sidebar';
 
 const navItems = [
@@ -57,6 +60,11 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="mt-auto">
+        <SidebarSeparator />
+        <ModelCard />
+      </SidebarFooter>
     </Sidebar>
   );
 }
