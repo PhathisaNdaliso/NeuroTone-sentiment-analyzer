@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Dashboard } from '@/pages/Dashboard';
 import { ComparativeAnalysis } from '@/pages/ComparativeAnalysis';
+import { AnalysisHistory } from '@/pages/AnalysisHistory';
 import { analyzeSentiment, analyzeBatch } from '@/lib/sentiment-analyzer';
 import { SentimentResult } from '@/types/sentiment';
 import { useToast } from '@/hooks/use-toast';
@@ -154,6 +155,16 @@ export default function Index() {
                     onSingleAnalysis={handleSingleAnalysis}
                     onBatchAnalysis={handleBatchAnalysis}
                     onVoiceAnalysis={handleVoiceAnalysis}
+                    onDeleteResult={deleteResult}
+                    onClearResults={clearResults}
+                  />
+                }
+              />
+              <Route 
+                path="/history" 
+                element={
+                  <AnalysisHistory
+                    results={results}
                     onDeleteResult={deleteResult}
                     onClearResults={clearResults}
                   />

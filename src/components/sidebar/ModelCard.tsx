@@ -1,4 +1,4 @@
-import { Bot, AlertTriangle, Shield, FileText, MessageSquareWarning, Ruler } from 'lucide-react';
+import { Bot, AlertTriangle, Shield, FileText, MessageSquareWarning, Ruler, Zap } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -58,6 +58,22 @@ export function ModelCard() {
                 <div>
                   <p className="font-medium">Data Privacy</p>
                   <p className="text-muted-foreground">Data is processed via external AI APIs. Not suitable for sensitive data (PII, credit cards, confidential docs).</p>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Zap className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-rose-500">Rate Limiting (Error 429)</p>
+                  <p className="text-muted-foreground mb-1">
+                    HTTP 429 means too many requests were sent too fast. The server blocks requests to prevent overload.
+                  </p>
+                  <p className="text-muted-foreground mb-1">
+                    <strong>Common in Batch Processing:</strong> Uploading a CSV with 50 rows fires 50 requests in 1 second, causing rate limiting.
+                  </p>
+                  <p className="text-muted-foreground">
+                    <strong>Solution:</strong> Wait the specified retry time (usually 10 seconds) before sending more requests.
+                  </p>
                 </div>
               </div>
             </div>
