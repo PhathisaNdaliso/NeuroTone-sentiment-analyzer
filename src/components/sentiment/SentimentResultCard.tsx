@@ -3,7 +3,13 @@ import { SentimentBadge } from './SentimentBadge';
 import { ConfidenceBar } from './ConfidenceBar';
 import { KeywordChips } from './KeywordChips';
 import { cn } from '@/lib/utils';
-import { MessageSquare, Clock } from 'lucide-react';
+import { MessageSquare, Clock, HelpCircle } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface SentimentResultCardProps {
   result: SentimentResult;
@@ -39,8 +45,28 @@ export function SentimentResultCard({ result, showFullText = false, className }:
           </p>
         </div>
 
-        {/* Confidence */}
-        <ConfidenceBar confidence={result.confidence} sentiment={result.sentiment} />
+        {/* Confidence with Explanation Tooltip */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">Confidence</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help transition-colors" />
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-xs p-3 space-y-2">
+                  <p className="font-semibold text-sm">❓ How to interpret this score:</p>
+                  <ul className="text-xs space-y-1.5">
+                    <li><span className="font-medium text-green-500">High Confidence (&gt;90%):</span> Strong emotional keywords found (e.g., "hate", "excellent", "terrible").</li>
+                    <li><span className="font-medium text-yellow-500">Low Confidence (&lt;60%):</span> Text is likely factual, mixed ("Good food, bad service"), or ambiguous.</li>
+                    <li><span className="font-medium text-muted-foreground">Neutral Label:</span> Often assigned to questions, facts, or statements without emotional adjectives.</li>
+                  </ul>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <ConfidenceBar confidence={result.confidence} sentiment={result.sentiment} />
+        </div>
 
         {/* Score Breakdown */}
         <div className="grid grid-cols-3 gap-3">
