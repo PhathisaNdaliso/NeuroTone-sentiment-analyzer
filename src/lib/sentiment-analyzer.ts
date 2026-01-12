@@ -5,6 +5,8 @@ function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 interface AIKeyword {
   word: string;
   influence: 'positive' | 'negative' | 'neutral';
@@ -21,15 +23,23 @@ interface AISentimentResponse {
   error?: string;
 }
 
+let rateLimitCooldownUntil = 0;
+
 export async function analyzeSentiment(text: string): Promise<SentimentResult> {
   const maxRetries = 2;
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      // Add delay between retries
+      const now = Date.now();
+      if (rateLimitCooldownUntil > now) {
+        await sleep(rateLimitCooldownUntil - now);
+      }
+
+      // Add delay between retries (exponential backoff + jitter)
       if (attempt > 0) {
-        await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
+        const backoffMs = Math.min(12_000, 2500 * 2 ** (attempt - 1)) + Math.floor(Math.random() * 250);
+        await sleep(backoffMs);
       }
 
       const { data, error } = await supabase.functions.invoke<AISentimentResponse>('analyze-sentiment', {
@@ -40,7 +50,9 @@ export async function analyzeSentiment(text: string): Promise<SentimentResult> {
         console.error('Edge function error:', error);
         // Check if it's a rate limit error
         if (error.message?.includes('429') || error.message?.includes('Rate limit')) {
-          lastError = new Error('Rate limit exceeded. Please try again in a few seconds.');
+          const cooldownMs = 8000;
+          rateLimitCooldownUntil = Math.max(rateLimitCooldownUntil, Date.now() + cooldownMs);
+          lastError = new Error('Rate limit exceeded. Please wait a few seconds and try again.');
           continue; // Retry
         }
         throw new Error(error.message || 'Analysis failed');
@@ -48,7 +60,9 @@ export async function analyzeSentiment(text: string): Promise<SentimentResult> {
 
       if (!data || data.error) {
         if (data?.error?.includes('Rate limit')) {
-          lastError = new Error('Rate limit exceeded. Please try again in a few seconds.');
+          const cooldownMs = 8000;
+          rateLimitCooldownUntil = Math.max(rateLimitCooldownUntil, Date.now() + cooldownMs);
+          lastError = new Error('Rate limit exceeded. Please wait a few seconds and try again.');
           continue; // Retry
         }
         throw new Error(data?.error || 'Invalid response from analysis');
@@ -97,7 +111,13 @@ export async function analyzeBatch(texts: string[], onProgress?: (progress: numb
       console.error(`Failed to analyze text ${i + 1}:`, error);
       // Continue with other texts even if one fails
     }
-    onProgress?.((i + 1) / texts.length * 100);
+
+    onProgress?.(((i + 1) / texts.length) * 100);
+
+    // Gentle pacing to reduce 429s during batch runs
+    if (i < texts.length - 1) {
+      await sleep(400);
+    }
   }
   
   return results;
