@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { Mic, FileAudio, X, AlertCircle, Loader2, Play, Pause, Volume2 } from 'lucide-react';
+import { Mic, FileAudio, X, AlertCircle, Loader2, Play, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -11,24 +11,6 @@ import {
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-const SAMPLE_AUDIO_DEMOS = [
-  {
-    name: 'Happy Customer Call',
-    description: 'Satisfied customer feedback',
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-  },
-  {
-    name: 'Neutral Inquiry',
-    description: 'Standard support question',
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
-  },
-  {
-    name: 'Frustrated Caller',
-    description: 'Complaint scenario',
-    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
-  },
-];
 
 interface VoiceSentimentResult {
   sentiment: 'positive' | 'negative' | 'neutral';
@@ -65,10 +47,8 @@ export function VoiceUploadButton({ onAnalysisComplete }: VoiceUploadButtonProps
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [playingSampleIndex, setPlayingSampleIndex] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const sampleAudioRef = useRef<HTMLAudioElement>(null);
 
   const processAudio = useCallback(async (file: File) => {
     setError(null);
@@ -167,63 +147,6 @@ export function VoiceUploadButton({ onAnalysisComplete }: VoiceUploadButtonProps
     setIsPlaying(!isPlaying);
   };
 
-  const toggleSamplePlayback = (index: number) => {
-    if (!sampleAudioRef.current) return;
-    
-    if (playingSampleIndex === index) {
-      sampleAudioRef.current.pause();
-      setPlayingSampleIndex(null);
-    } else {
-      sampleAudioRef.current.src = SAMPLE_AUDIO_DEMOS[index].url;
-      sampleAudioRef.current.play();
-      setPlayingSampleIndex(index);
-    }
-  };
-
-  const handleSampleAnalysis = async (sample: typeof SAMPLE_AUDIO_DEMOS[0]) => {
-    setError(null);
-    setIsAnalyzing(true);
-    setPlayingSampleIndex(null);
-    if (sampleAudioRef.current) {
-      sampleAudioRef.current.pause();
-    }
-
-    try {
-      const response = await fetch(sample.url);
-      const blob = await response.blob();
-      const arrayBuffer = await blob.arrayBuffer();
-      const base64 = btoa(
-        new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
-      );
-
-      const { data, error: fnError } = await supabase.functions.invoke<VoiceSentimentResult>('analyze-voice-sentiment', {
-        body: { 
-          audio: base64,
-          mimeType: 'audio/mpeg'
-        }
-      });
-
-      if (fnError) {
-        console.error('Voice analysis error:', fnError);
-        throw new Error(fnError.message || 'Analysis failed');
-      }
-
-      if (!data) {
-        throw new Error('No response from analysis');
-      }
-
-      toast.success('Sample voice analysis complete!');
-      onAnalysisComplete(data);
-      setOpen(false);
-    } catch (err) {
-      console.error('Failed to analyze sample audio:', err);
-      setError(err instanceof Error ? err.message : 'Failed to analyze sample audio');
-      toast.error('Failed to analyze sample audio');
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={(newOpen) => {
       if (!isAnalyzing) {
@@ -279,6 +202,25 @@ export function VoiceUploadButton({ onAnalysisComplete }: VoiceUploadButtonProps
                     Transcribing and detecting sentiment
                   </p>
                 </div>
+                {audioUrl && (
+                  <div className="flex items-center gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={togglePlayback}
+                      className="gap-2"
+                    >
+                      {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                      {isPlaying ? 'Pause' : 'Listen while analyzing'}
+                    </Button>
+                    <audio
+                      ref={audioRef}
+                      src={audioUrl}
+                      onEnded={() => setIsPlaying(false)}
+                      className="hidden"
+                    />
+                  </div>
+                )}
               </div>
             ) : file ? (
               <div className="flex flex-col items-center gap-3">
@@ -340,55 +282,6 @@ export function VoiceUploadButton({ onAnalysisComplete }: VoiceUploadButtonProps
               {error}
             </div>
           )}
-
-          {/* Sample Audio Demos */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Volume2 className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Sample Audio Demos</span>
-            </div>
-            <div className="grid gap-2">
-              {SAMPLE_AUDIO_DEMOS.map((sample, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => toggleSamplePlayback(index)}
-                      disabled={isAnalyzing}
-                    >
-                      {playingSampleIndex === index ? (
-                        <Pause className="w-4 h-4" />
-                      ) : (
-                        <Play className="w-4 h-4" />
-                      )}
-                    </Button>
-                    <div>
-                      <p className="text-sm font-medium">{sample.name}</p>
-                      <p className="text-xs text-muted-foreground">{sample.description}</p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSampleAnalysis(sample)}
-                    disabled={isAnalyzing}
-                  >
-                    Analyze
-                  </Button>
-                </div>
-              ))}
-            </div>
-            <audio
-              ref={sampleAudioRef}
-              onEnded={() => setPlayingSampleIndex(null)}
-              className="hidden"
-            />
-          </div>
           
           <div className="bg-muted/50 rounded-lg p-3">
             <p className="text-xs text-muted-foreground">
