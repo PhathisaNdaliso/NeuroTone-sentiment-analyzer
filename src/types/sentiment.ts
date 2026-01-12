@@ -13,6 +13,12 @@ export interface Keyword {
   percentageContribution?: number;
 }
 
+export interface VoiceAnalysis {
+  detectedTone: string;
+  emotionalIndicators: string[];
+  speakingStyle: string;
+}
+
 export interface SentimentResult {
   id: string;
   text: string;
@@ -22,6 +28,8 @@ export interface SentimentResult {
   keywords: Keyword[];
   explanation: string;
   timestamp: Date;
+  isVoiceAnalysis?: boolean;
+  voiceAnalysis?: VoiceAnalysis;
 }
 
 export interface BatchResult {

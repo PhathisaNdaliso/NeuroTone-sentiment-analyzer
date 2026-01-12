@@ -7,6 +7,7 @@ import { ExportButtons } from '@/components/sentiment/ExportButtons';
 import { BatchProgress } from '@/components/sentiment/BatchProgress';
 import { ResultsList } from '@/components/sentiment/ResultsList';
 import { FileUploadButton } from '@/components/FileUploadButton';
+import { VoiceUploadButton } from '@/components/VoiceUploadButton';
 import { Trash2, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -17,6 +18,15 @@ interface DashboardProps {
   batchProgress: { current: number; total: number };
   onSingleAnalysis: (text: string) => void;
   onBatchAnalysis: (texts: string[]) => void;
+  onVoiceAnalysis: (result: {
+    sentiment: 'positive' | 'negative' | 'neutral';
+    confidence: number;
+    scores: { positive: number; negative: number; neutral: number };
+    keywords: Array<{ word: string; influence: 'positive' | 'negative' | 'neutral'; weight: number; percentageContribution: number }>;
+    explanation: string;
+    transcription: string;
+    voiceAnalysis: { detectedTone: string; emotionalIndicators: string[]; speakingStyle: string };
+  }) => void;
   onDeleteResult: (id: string) => void;
   onClearResults: () => void;
 }
@@ -28,6 +38,7 @@ export function Dashboard({
   batchProgress,
   onSingleAnalysis,
   onBatchAnalysis,
+  onVoiceAnalysis,
   onDeleteResult,
   onClearResults,
 }: DashboardProps) {
@@ -43,7 +54,7 @@ export function Dashboard({
         </p>
       </div>
 
-      {/* Text Input with Upload Button */}
+      {/* Text Input with Upload and Voice Buttons */}
       <div className="sentiment-card">
         <div className="flex gap-4">
           <div className="flex-1">
@@ -51,6 +62,9 @@ export function Dashboard({
           </div>
           <div className="flex-shrink-0">
             <FileUploadButton onTextsLoaded={onBatchAnalysis} />
+          </div>
+          <div className="flex-shrink-0">
+            <VoiceUploadButton onAnalysisComplete={onVoiceAnalysis} />
           </div>
         </div>
       </div>

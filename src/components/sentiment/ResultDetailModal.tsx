@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { X, Trash2, Download, FileJson, FileText, FileType, Clock, MessageSquare } from 'lucide-react';
+import { X, Trash2, Download, FileJson, FileText, FileType, Clock, MessageSquare, Mic, Volume2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -163,7 +163,8 @@ export function ResultDetailModal({ result, open, onClose, onDelete }: ResultDet
         <DialogHeader className="flex flex-row items-center justify-between gap-4">
           <DialogTitle className="flex items-center gap-3">
             <SentimentBadge sentiment={result.sentiment} size="lg" />
-            <span>Analysis Result</span>
+            <span>{result.isVoiceAnalysis ? 'Voice Analysis Result' : 'Analysis Result'}</span>
+            {result.isVoiceAnalysis && <Mic className="w-4 h-4 text-primary" />}
           </DialogTitle>
         </DialogHeader>
 
@@ -174,11 +175,43 @@ export function ResultDetailModal({ result, open, onClose, onDelete }: ResultDet
             <span>{result.timestamp.toLocaleString()}</span>
           </div>
 
-          {/* Full Text */}
+          {/* Voice Analysis Section */}
+          {result.isVoiceAnalysis && result.voiceAnalysis && (
+            <div className="bg-primary/5 rounded-lg p-4 border border-primary/20 space-y-3">
+              <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                <Volume2 className="w-4 h-4" />
+                <span>Voice Tone Analysis</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Detected Tone</p>
+                  <p className="font-medium capitalize">{result.voiceAnalysis.detectedTone}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Speaking Style</p>
+                  <p className="font-medium">{result.voiceAnalysis.speakingStyle}</p>
+                </div>
+              </div>
+              {result.voiceAnalysis.emotionalIndicators.length > 0 && (
+                <div>
+                  <p className="text-muted-foreground text-sm mb-2">Emotional Indicators</p>
+                  <div className="flex flex-wrap gap-2">
+                    {result.voiceAnalysis.emotionalIndicators.map((indicator, i) => (
+                      <span key={i} className="text-xs px-2 py-1 bg-primary/10 rounded-full capitalize">
+                        {indicator}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Full Text / Transcription */}
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm font-medium">
               <MessageSquare className="w-4 h-4" />
-              <span>Full Input Text</span>
+              <span>{result.isVoiceAnalysis ? 'Transcription' : 'Full Input Text'}</span>
             </div>
             <div className="bg-muted/50 rounded-lg p-4 max-h-48 overflow-y-auto">
               <p className="text-sm leading-relaxed whitespace-pre-wrap">{result.text}</p>
