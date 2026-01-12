@@ -2,12 +2,15 @@ import { useState, useCallback } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { FileUploadButton } from '@/components/FileUploadButton';
 import { Dashboard } from '@/pages/Dashboard';
 import { ComparativeAnalysis } from '@/pages/ComparativeAnalysis';
 import { analyzeSentiment, analyzeBatch } from '@/lib/sentiment-analyzer';
 import { SentimentResult } from '@/types/sentiment';
 import { useToast } from '@/hooks/use-toast';
+
+function generateId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
 
 export default function Index() {
   const [results, setResults] = useState<SentimentResult[]>([]);
@@ -82,6 +85,35 @@ export default function Index() {
     });
   }, [latestResult, toast]);
 
+  const handleVoiceAnalysis = useCallback((voiceResult: {
+    sentiment: 'positive' | 'negative' | 'neutral';
+    confidence: number;
+    scores: { positive: number; negative: number; neutral: number };
+    keywords: Array<{ word: string; influence: 'positive' | 'negative' | 'neutral'; weight: number; percentageContribution: number }>;
+    explanation: string;
+    transcription: string;
+    voiceAnalysis: { detectedTone: string; emotionalIndicators: string[]; speakingStyle: string };
+  }) => {
+    const result: SentimentResult = {
+      id: generateId(),
+      text: voiceResult.transcription || '[Audio transcription]',
+      sentiment: voiceResult.sentiment,
+      confidence: voiceResult.confidence,
+      scores: voiceResult.scores,
+      keywords: voiceResult.keywords,
+      explanation: voiceResult.explanation,
+      timestamp: new Date(),
+      isVoiceAnalysis: true,
+      voiceAnalysis: voiceResult.voiceAnalysis,
+    };
+    setLatestResult(result);
+    setResults(prev => [result, ...prev]);
+    toast({
+      title: 'Voice Analysis Complete',
+      description: `Detected ${result.sentiment} sentiment with ${Math.round(result.confidence * 100)}% confidence`,
+    });
+  }, [toast]);
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -106,10 +138,11 @@ export default function Index() {
                     batchProgress={batchProgress}
                     onSingleAnalysis={handleSingleAnalysis}
                     onBatchAnalysis={handleBatchAnalysis}
+                    onVoiceAnalysis={handleVoiceAnalysis}
                     onDeleteResult={deleteResult}
                     onClearResults={clearResults}
                   />
-                } 
+                }
               />
               <Route 
                 path="/comparative" 
