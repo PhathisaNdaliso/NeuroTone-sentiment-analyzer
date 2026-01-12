@@ -29,12 +29,27 @@ export default function Index() {
         title: 'Analysis Complete',
         description: `Detected ${result.sentiment} sentiment with ${Math.round(result.confidence * 100)}% confidence`,
       });
-    } catch (error) {
-      toast({
-        title: 'Analysis Failed',
-        description: 'Please try again later',
-        variant: 'destructive',
-      });
+    } catch (error: any) {
+      const errorMessage = error?.message || '';
+      if (errorMessage.includes('Rate limit') || errorMessage.includes('429')) {
+        toast({
+          title: 'Rate Limit Reached',
+          description: 'Too many requests. Please wait a few seconds and try again.',
+          variant: 'destructive',
+        });
+      } else if (errorMessage.includes('402') || errorMessage.includes('credits')) {
+        toast({
+          title: 'Credits Exhausted',
+          description: 'AI credits have been used up.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Analysis Failed',
+          description: 'Please try again later',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setIsAnalyzing(false);
     }

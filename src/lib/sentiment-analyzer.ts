@@ -22,42 +22,68 @@ interface AISentimentResponse {
 }
 
 export async function analyzeSentiment(text: string): Promise<SentimentResult> {
-  try {
-    const { data, error } = await supabase.functions.invoke<AISentimentResponse>('analyze-sentiment', {
-      body: { text }
-    });
+  const maxRetries = 2;
+  let lastError: Error | null = null;
 
-    if (error) {
-      console.error('Edge function error:', error);
-      throw new Error(error.message || 'Analysis failed');
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      // Add delay between retries
+      if (attempt > 0) {
+        await new Promise(resolve => setTimeout(resolve, 1500 * attempt));
+      }
+
+      const { data, error } = await supabase.functions.invoke<AISentimentResponse>('analyze-sentiment', {
+        body: { text }
+      });
+
+      if (error) {
+        console.error('Edge function error:', error);
+        // Check if it's a rate limit error
+        if (error.message?.includes('429') || error.message?.includes('Rate limit')) {
+          lastError = new Error('Rate limit exceeded. Please try again in a few seconds.');
+          continue; // Retry
+        }
+        throw new Error(error.message || 'Analysis failed');
+      }
+
+      if (!data || data.error) {
+        if (data?.error?.includes('Rate limit')) {
+          lastError = new Error('Rate limit exceeded. Please try again in a few seconds.');
+          continue; // Retry
+        }
+        throw new Error(data?.error || 'Invalid response from analysis');
+      }
+
+      // Transform AI keywords to match our Keyword type
+      const keywords: Keyword[] = data.keywords.map(k => ({
+        word: k.word,
+        influence: k.influence,
+        weight: k.weight,
+        percentageContribution: k.percentageContribution
+      }));
+
+      return {
+        id: generateId(),
+        text,
+        sentiment: data.sentiment,
+        confidence: data.confidence,
+        scores: data.scores,
+        keywords,
+        explanation: data.explanation,
+        timestamp: new Date(),
+      };
+    } catch (error) {
+      console.error(`Sentiment analysis attempt ${attempt + 1} failed:`, error);
+      lastError = error instanceof Error ? error : new Error('Analysis failed');
+      
+      // Don't retry on non-rate-limit errors
+      if (!lastError.message.includes('Rate limit') && !lastError.message.includes('429')) {
+        throw lastError;
+      }
     }
-
-    if (!data || data.error) {
-      throw new Error(data?.error || 'Invalid response from analysis');
-    }
-
-    // Transform AI keywords to match our Keyword type
-    const keywords: Keyword[] = data.keywords.map(k => ({
-      word: k.word,
-      influence: k.influence,
-      weight: k.weight,
-      percentageContribution: k.percentageContribution
-    }));
-
-    return {
-      id: generateId(),
-      text,
-      sentiment: data.sentiment,
-      confidence: data.confidence,
-      scores: data.scores,
-      keywords,
-      explanation: data.explanation,
-      timestamp: new Date(),
-    };
-  } catch (error) {
-    console.error('Sentiment analysis error:', error);
-    throw error;
   }
+
+  throw lastError || new Error('Analysis failed after retries');
 }
 
 export async function analyzeBatch(texts: string[], onProgress?: (progress: number) => void): Promise<SentimentResult[]> {
